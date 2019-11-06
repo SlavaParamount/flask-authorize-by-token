@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, render_template
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -70,7 +70,7 @@ def get_all_users(current_user):
 		user_data['password'] = user.password
 		user_data['admin'] = user.admin
 		output.append(user_data)
-		
+
 	return jsonify({'users' : output})
 @app.route('/user/<public_id>', methods=['GET'])
 def get_one_user(public_id):
@@ -157,12 +157,28 @@ def login():
 @app.route('/todo', methods=['GET'])
 @tokin_required
 def get_all_todos(current_user):
-	return ''
+	todos = Todo.query.filter_by(user_id=current_user.id).all()
+
+	output = []
+
+	for todo in todos:
+		todo_data = {}
+		todo_data['id'] = todo.id
+		todo_data['text'] = todo.text
+		todo_data['complete'] = todo.complete
+		output.append(todo_data)
+
+	return jsonify({'todos' : output})
 
 @app.route('/todo/<todo_id>', methods=['GET'])
 @tokin_required
 def get_one__todo(current_user, todo_id):
 	return ''
+
+@app.route('/todotest')
+def hello():
+	todos = Todo.query.all()
+	return render_template('index.html', todos=todos)
 
 @app.route('/todo', methods=['POST'])
 @tokin_required
